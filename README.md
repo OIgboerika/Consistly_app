@@ -32,3 +32,4 @@ Consistly_app is a baseline FastAPI application designed for professional DevOps
    ```bash
    pytest
    ```
+# Trigger CI
