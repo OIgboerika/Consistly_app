@@ -1,1 +1,1 @@
-# Placeholder for configuration settings 
+# Placeholder for configuration settings
