@@ -90,6 +90,71 @@ Consistly is a web application that helps users build and maintain daily habits 
 
 ---
 
+## Docker-Based Local Setup
+
+You can run the backend (FastAPI) and a local Postgres database using Docker Compose:
+
+1. **Build and start services:**
+   ```sh
+   docker-compose up --build
+   ```
+2. The backend will be available at [http://localhost:8000](http://localhost:8000).
+3. To stop services:
+   ```sh
+   docker-compose down
+   ```
+
+---
+
+## Azure Cloud Deployment (with Terraform)
+
+### Prerequisites
+
+- [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
+- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
+- Docker
+
+### 1. Provision Azure Infrastructure
+
+1. **Login to Azure:**
+   ```sh
+   az login
+   ```
+2. **Initialize and apply Terraform:**
+   ```sh
+   cd infra
+   terraform init
+   terraform apply
+   ```
+   - Review and approve the plan when prompted.
+3. **Note the outputs:**
+   - ACR login server
+   - Postgres connection string
+   - Backend app public URL
+
+### 2. Build & Push Docker Image to Azure Container Registry (ACR)
+
+1. **Login to ACR:**
+   ```sh
+   az acr login --name <acr_name_from_output>
+   ```
+2. **Build the Docker image:**
+   ```sh
+   docker build -t <acr_login_server_from_output>/consistly-backend:latest .
+   ```
+3. **Push the image:**
+   ```sh
+   docker push <acr_login_server_from_output>/consistly-backend:latest
+   ```
+
+### 3. Deploy to Azure Container App
+
+- The Container App is configured to pull the latest image from ACR.
+- The backend will be accessible at the public URL output by Terraform.
+- Environment variables (like the Postgres connection string) are set automatically.
+
+---
+
 ## Testing & Quality
 
 - **Linting:**
