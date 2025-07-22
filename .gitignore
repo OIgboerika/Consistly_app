@@ -89,3 +89,4 @@ $RECYCLE.BIN/
 
 # Pyre type checker
 .pyre/ 
+.terraform/ 
