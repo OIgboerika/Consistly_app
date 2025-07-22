@@ -3,7 +3,8 @@ output "acr_login_server" {
 }
 
 output "postgres_connection_string" {
-  value = "postgresql://pgadmin:${random_password.postgres.result}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/consistlydb"
+  value     = "postgresql://pgadmin:${random_password.postgres.result}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/consistlydb"
+  sensitive = true
 }
 
 output "backend_app_url" {
