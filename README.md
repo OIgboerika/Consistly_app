@@ -178,3 +178,4 @@ You can run the backend (FastAPI) and a local Postgres database using Docker Com
 ## License
 
 MIT
+END
