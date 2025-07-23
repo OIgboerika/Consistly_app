@@ -30,16 +30,16 @@ resource "azurerm_container_app" "backend" {
         value = "postgresql://pgadmin:${random_password.postgres.result}@${azurerm_postgresql_flexible_server.main.fqdn}:5432/consistlydb"
       }
     }
-    scale {
-      min_replicas = 1
-      max_replicas = 2
-    }
   }
 
   ingress {
     external_enabled = true
     target_port      = 8000
     transport        = "auto"
+    traffic_weight {
+      percentage      = 100
+      latest_revision = true
+    }
   }
 
   registry {
