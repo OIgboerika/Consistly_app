@@ -1,3 +1,6 @@
 # Pyre type checker
 .pyre/ 
 .terraform/ 
+
+node_modules/
+build/
