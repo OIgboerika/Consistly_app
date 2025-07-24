@@ -16,76 +16,42 @@ Consistly is a web application that helps users build and maintain daily habits 
 
 ## Tech Stack
 
-- **Backend:** Node.js (Express, MongoDB) _(FastAPI Python baseline included as reference)_
+- **Backend:** FastAPI (Python)
 - **Frontend:** React.js
 - **DevOps:** GitHub, GitHub Actions, CI/CD, Branch Protection, Code Review
 
 ---
 
-## DevOps Practices Implemented
-
-- **Source Control:** All code is versioned in Git and hosted on GitHub.
-- **Branching Strategy:** `main` for production, `develop` for integration, feature branches for new work.
-- **Branch Protection:**
-  - Pull Requests required for merging to `main`.
-  - At least one code review required.
-  - CI checks must pass before merging.
-- **Continuous Integration (CI):**
-  - Automated with GitHub Actions.
-  - Runs linting and unit tests on every Pull Request.
-- **Continuous Delivery (CD):**
-  - Project is structured for easy containerization and future cloud deployment.
-- **Issue Tracking & Project Board:**
-  - All work is tracked via GitHub Issues and a Project Board for visibility and planning.
-
----
-
 ## Local Development Setup
 
-### Backend (Node.js/Express)
+### Backend (FastAPI)
 
 1. **Navigate to backend folder:**
-   ```bash
+   ```sh
    cd backend
    ```
 2. **Install dependencies:**
-   ```bash
-   npm install
+   ```sh
+   bun install
    ```
-3. **Copy and configure environment variables:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your MongoDB URI and JWT secret
-   ```
-4. **Run the backend server:**
-   ```bash
-   npm run dev
+3. **Run the backend server:**
+   ```sh
+   bun run src/index.js
    ```
 
 ### Frontend (React)
 
 1. **Navigate to frontend folder:**
-   ```bash
+   ```sh
    cd frontend
    ```
 2. **Install dependencies:**
-   ```bash
-   npm install
+   ```sh
+   bun install
    ```
 3. **Run the frontend app:**
-   ```bash
-   npm start
-   ```
-
-### (Legacy/Reference) FastAPI Python Baseline
-
-1. **Install Python dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
-2. **Run FastAPI app:**
-   ```bash
-   uvicorn app.main:app --reload
+   ```sh
+   bun run src/App.js
    ```
 
 ---
@@ -124,7 +90,7 @@ You can run the backend (FastAPI) and a local Postgres database using Docker Com
    ```sh
    cd infra
    terraform init
-   terraform apply
+   terraform apply -auto-approve
    ```
    - Review and approve the plan when prompted.
 3. **Note the outputs:**
@@ -132,38 +98,35 @@ You can run the backend (FastAPI) and a local Postgres database using Docker Com
    - Postgres connection string
    - Backend app public URL
 
-### 2. Build & Push Docker Image to Azure Container Registry (ACR)
+### 2. Manual Cloud Deployment
 
-1. **Login to ACR:**
-   ```sh
-   az acr login --name <acr_name_from_output>
-   ```
-2. **Build the Docker image:**
+1. **Build the Docker image:**
    ```sh
    docker build -t <acr_login_server_from_output>/consistly-backend:latest .
+   ```
+2. **Login to ACR:**
+   ```sh
+   az acr login --name <acr_name_from_output>
    ```
 3. **Push the image:**
    ```sh
    docker push <acr_login_server_from_output>/consistly-backend:latest
    ```
-
-### 3. Deploy to Azure Container App
-
-- The Container App is configured to pull the latest image from ACR.
-- The backend will be accessible at the public URL output by Terraform.
-- Environment variables (like the Postgres connection string) are set automatically.
+4. **Deploy:**
+   - The Container App is configured to pull the latest image from ACR.
+   - The backend will be accessible at the public URL output by Terraform.
+   - Environment variables (like the Postgres connection string) are set automatically.
 
 ---
 
-## Testing & Quality
+## phase.md
 
-- **Linting:**
-  - Python: `flake8`
-  - Node.js: `eslint` (to be configured)
-- **Unit Testing:**
-  - Python: `pytest`
-  - Node.js: `jest` (to be configured)
-- **CI:** All tests and linters run automatically on Pull Requests.
+See the `phase.md` file in this repository for:
+
+- The live public URL to the deployed backend
+- Screenshots of provisioned Azure resources
+- Peer review PR link
+- Reflection on IaC and manual deployment
 
 ---
 
@@ -178,4 +141,3 @@ You can run the backend (FastAPI) and a local Postgres database using Docker Com
 ## License
 
 MIT
-END
