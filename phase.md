@@ -39,3 +39,5 @@ _Link to the Pull Request you reviewed for your peer:_
 - Always add sensitive files (like terraform.tfstate) to .gitignore from the start.
 - Use Terraform outputs to track important resource URLs and credentials.
 - Manual deployment is a good learning experience, but automating the process is more reliable and less error-prone in production.
+
+END
