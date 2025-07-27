@@ -3,11 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 import time
 import psutil
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, Histogram, generate_latest
 from app.api.v1 import endpoints
 
 # Prometheus metrics
-REQUEST_COUNT = Counter('http_requests_total', 'Total HTTP requests', ['method', 'endpoint', 'status'])
+REQUEST_COUNT = Counter(
+    'http_requests_total', 'Total HTTP requests', ['method', 'endpoint', 'status']
+)
 REQUEST_LATENCY = Histogram('http_request_duration_seconds', 'HTTP request latency')
 
 app = FastAPI(
@@ -25,13 +27,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
 # Middleware for metrics collection
 @app.middleware("http")
 async def metrics_middleware(request: Request, call_next):
     start_time = time.time()
-    
+
     response = await call_next(request)
-    
+
     # Record metrics
     duration = time.time() - start_time
     REQUEST_COUNT.labels(
@@ -40,8 +43,9 @@ async def metrics_middleware(request: Request, call_next):
         status=response.status_code
     ).inc()
     REQUEST_LATENCY.observe(duration)
-    
+
     return response
+
 
 # Health check endpoint
 @app.get("/health")
@@ -53,6 +57,7 @@ async def health_check():
         "service": "consistly-backend"
     }
 
+
 # Detailed health check
 @app.get("/health/detailed")
 async def detailed_health_check():
@@ -62,7 +67,7 @@ async def detailed_health_check():
         cpu_percent = psutil.cpu_percent(interval=1)
         memory = psutil.virtual_memory()
         disk = psutil.disk_usage('/')
-        
+
         return {
             "status": "healthy",
             "timestamp": time.time(),
@@ -83,11 +88,13 @@ async def detailed_health_check():
             }
         )
 
+
 # Metrics endpoint for Prometheus
 @app.get("/metrics")
 async def metrics():
     """Prometheus metrics endpoint"""
     return generate_latest()
+
 
 # Root endpoint
 @app.get("/")
@@ -99,6 +106,7 @@ async def root():
         "docs": "/docs",
         "health": "/health"
     }
+
 
 # Include API routes
 app.include_router(endpoints.router, prefix="/api/v1")
