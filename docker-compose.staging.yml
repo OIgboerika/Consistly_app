@@ -1,0 +1,139 @@
+version: "3.8"
+
+services:
+  # Backend API
+  backend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-oigboerika/consistly_app}:develop
+    container_name: consistly-backend-staging
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://myuser:mypassword@db:5432/mydb_staging
+      - SECRET_KEY=${STAGING_SECRET_KEY}
+      - ENVIRONMENT=staging
+    depends_on:
+      - db
+    networks:
+      - consistly-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    image: ghcr.io/${GITHUB_REPOSITORY:-oigboerika/consistly_app}-frontend:develop
+    container_name: consistly-frontend-staging
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - consistly-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Database
+  db:
+    image: postgres:14
+    container_name: consistly-db-staging
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb_staging
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+    networks:
+      - consistly-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb_staging"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Prometheus for staging monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: consistly-prometheus-staging
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/alerts.yml:/etc/prometheus/alerts.yml
+      - prometheus_staging_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/etc/prometheus/console_libraries"
+      - "--web.console.templates=/etc/prometheus/consoles"
+      - "--storage.tsdb.retention.time=200h"
+      - "--web.enable-lifecycle"
+    networks:
+      - consistly-staging-network
+    restart: unless-stopped
+
+  # PostgreSQL Exporter for database metrics
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:latest
+    container_name: consistly-postgres-exporter-staging
+    environment:
+      DATA_SOURCE_NAME: "postgresql://myuser:mypassword@db:5432/mydb_staging?sslmode=disable"
+    networks:
+      - consistly-staging-network
+    restart: unless-stopped
+    depends_on:
+      - db
+
+  # cAdvisor for container metrics
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: consistly-cadvisor-staging
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    networks:
+      - consistly-staging-network
+    restart: unless-stopped
+
+  # Grafana for staging dashboards
+  grafana:
+    image: grafana/grafana:latest
+    container_name: consistly-grafana-staging
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${STAGING_GRAFANA_PASSWORD:-admin}
+    volumes:
+      - grafana_staging_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - consistly-staging-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
+volumes:
+  postgres_staging_data:
+  prometheus_staging_data:
+  grafana_staging_data:
+
+networks:
+  consistly-staging-network:
+    driver: bridge

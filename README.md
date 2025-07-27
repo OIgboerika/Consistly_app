@@ -119,6 +119,85 @@ You can run the backend (FastAPI) and a local Postgres database using Docker Com
 
 ---
 
+## Live Environments
+
+### Production Environment
+
+- **Frontend:** https://consistly-app.com
+- **Backend API:** https://api.consistly-app.com
+- **Monitoring Dashboard:** https://monitoring.consistly-app.com
+
+### Staging Environment
+
+- **Frontend:** https://staging.consistly-app.com
+- **Backend API:** https://staging-api.consistly-app.com
+- **Monitoring Dashboard:** https://staging-monitoring.consistly-app.com
+
+### Health Check Endpoints
+
+- Production Health: https://consistly-app.com/health
+- Staging Health: https://staging.consistly-app.com/health
+- API Health: https://api.consistly-app.com/health
+
+## CI/CD Pipeline
+
+The project uses a comprehensive CI/CD pipeline with the following stages:
+
+1. **Security Scanning**
+
+   - Trivy vulnerability scanning
+   - Bandit security linter for Python code
+   - Dependency vulnerability scanning
+
+2. **Testing**
+
+   - Backend unit tests with coverage
+   - Frontend unit tests
+   - Integration tests
+   - Code linting and quality checks
+
+3. **Build & Push**
+
+   - Multi-stage Docker builds
+   - Container image security scanning
+   - Push to GitHub Container Registry
+
+4. **Deployment**
+
+   - Automatic deployment to staging on `develop` branch
+   - Automatic deployment to production on `main` branch
+   - Health checks and rollback capabilities
+
+5. **Monitoring**
+   - Prometheus metrics collection
+   - Grafana dashboards
+   - AlertManager for notifications
+   - Application and infrastructure monitoring
+
+## Monitoring & Observability
+
+### Metrics Collected
+
+- Application response times
+- Error rates and status codes
+- System resource usage (CPU, Memory, Disk)
+- Database connection health
+- Container restart frequency
+
+### Alerts Configured
+
+- High CPU/Memory usage (>80% for 5 minutes)
+- Service downtime (>1 minute)
+- High error rates (>5% for 5 minutes)
+- High response times (>2 seconds 95th percentile)
+- Low disk space (<10%)
+
+### Accessing Monitoring
+
+- **Grafana Dashboard:** https://monitoring.consistly-app.com (admin/admin)
+- **Prometheus:** https://monitoring.consistly-app.com:9090
+- **AlertManager:** https://monitoring.consistly-app.com:9093
+
 ## phase.md
 
 See the `phase.md` file in this repository for:
