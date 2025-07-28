@@ -1,9 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 import time
-import psutil
-from prometheus_client import Counter, Histogram, generate_latest
+from prometheus_client import Counter, Histogram
 from app.api.v1 import endpoints
 
 REQUEST_COUNT = Counter(
