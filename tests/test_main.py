@@ -7,4 +7,8 @@ client = TestClient(app)
 def test_read_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to Consistly_app!"}
+    data = response.json()
+    assert data["message"] == "Welcome to Consistly API"
+    assert "version" in data
+    assert "docs" in data
+    assert "health" in data
