@@ -8,9 +8,14 @@ from app.api.v1 import endpoints
 
 # Prometheus metrics
 REQUEST_COUNT = Counter(
-    'http_requests_total', 'Total HTTP requests', ['method', 'endpoint', 'status']
+    'http_requests_total', 
+    'Total HTTP requests', 
+    ['method', 'endpoint', 'status']
 )
-REQUEST_LATENCY = Histogram('http_request_duration_seconds', 'HTTP request latency')
+REQUEST_LATENCY = Histogram(
+    'http_request_duration_seconds', 
+    'HTTP request latency'
+)
 
 app = FastAPI(
     title="Consistly API",
