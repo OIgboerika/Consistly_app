@@ -8,12 +8,12 @@ from app.api.v1 import endpoints
 
 # Prometheus metrics
 REQUEST_COUNT = Counter(
-    'http_requests_total', 
-    'Total HTTP requests', 
+    'http_requests_total',
+    'Total HTTP requests',
     ['method', 'endpoint', 'status']
 )
 REQUEST_LATENCY = Histogram(
-    'http_request_duration_seconds', 
+    'http_request_duration_seconds',
     'HTTP request latency'
 )
 
@@ -114,4 +114,4 @@ async def root():
 
 
 # Include API routes
-app.include_router(endpoints.router, prefix="/api/v1")
+app.include_router(endpoints.router, prefix="/api/v1") 
