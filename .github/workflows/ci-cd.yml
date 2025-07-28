@@ -10,6 +10,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   AZURE_REGISTRY: consistlyacr.azurecr.io
+  REPO_OWNER_LOWER: ${{ github.repository_owner }}
 
 jobs:
   # Security and Quality Checks
@@ -154,11 +155,14 @@ jobs:
         run: |
           az acr login --name consistlyacr
 
+      - name: Set lowercase repository owner
+        run: echo "REPO_OWNER_LOWER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Extract metadata
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: ${{ env.REGISTRY }}/${{ github.repository_owner }}/consistly-backend
+          images: ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/consistly-backend
           tags: |
             type=ref,event=branch
             type=ref,event=pr
@@ -183,7 +187,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ github.repository_owner }}/consistly-frontend:${{ github.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/consistly-frontend:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
