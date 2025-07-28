@@ -7,7 +7,7 @@ set -e  # Exit on any error
 
 # Configuration
 RESOURCE_GROUP="consistly-rg"
-LOCATION="eastus"
+LOCATION="centralus"
 ACR_NAME="consistlyacr"
 POSTGRES_SERVER="consistly-postgres"
 APP_GATEWAY_NAME="consistly-appgateway"
@@ -54,9 +54,16 @@ check_azure_login() {
 
 # Create resource group
 create_resource_group() {
-    print_status "Creating resource group: $RESOURCE_GROUP"
-    az group create --name $RESOURCE_GROUP --location $LOCATION --output none
-    print_status "Resource group created successfully"
+    print_status "Checking resource group: $RESOURCE_GROUP"
+    
+    # Check if resource group exists
+    if az group show --name $RESOURCE_GROUP &> /dev/null; then
+        print_status "Resource group $RESOURCE_GROUP already exists"
+    else
+        print_status "Creating resource group: $RESOURCE_GROUP"
+        az group create --name $RESOURCE_GROUP --location $LOCATION --output none
+        print_status "Resource group created successfully"
+    fi
 }
 
 # Create Azure Container Registry

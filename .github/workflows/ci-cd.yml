@@ -239,7 +239,7 @@ jobs:
             --dns-name-label consistly-frontend-staging \
             --ports 80 \
             --environment-variables \
-              REACT_APP_API_URL="http://consistly-backend-staging.eastus.azurecontainer.io:8000" \
+              REACT_APP_API_URL="http://consistly-backend-staging.centralus.azurecontainer.io:8000" \
               REACT_APP_ENVIRONMENT="staging" \
             --restart-policy Always \
             --output none
@@ -248,8 +248,8 @@ jobs:
         run: |
           echo "Performing health check on Azure staging..."
           sleep 30  # Wait for containers to start
-          curl -f http://consistly-backend-staging.eastus.azurecontainer.io:8000/health
-          curl -f http://consistly-frontend-staging.eastus.azurecontainer.io/health
+          curl -f http://consistly-backend-staging.centralus.azurecontainer.io:8000/health
+          curl -f http://consistly-frontend-staging.centralus.azurecontainer.io/health
 
   # Deploy to Azure Production
   deploy-azure-production:
@@ -301,8 +301,8 @@ jobs:
         run: |
           echo "Performing health check on Azure production..."
           sleep 30  # Wait for containers to start
-          curl -f http://consistly-backend-prod.eastus.azurecontainer.io:8000/health
-          curl -f http://consistly-frontend-prod.eastus.azurecontainer.io/health
+          curl -f http://consistly-backend-prod.centralus.azurecontainer.io:8000/health
+          curl -f http://consistly-frontend-prod.centralus.azurecontainer.io/health
 
   # Deploy to Staging (Local)
   deploy-staging:

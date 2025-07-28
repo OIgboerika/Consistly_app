@@ -3,7 +3,7 @@
 
 # Resource Configuration
 resource_group: "consistly-rg"
-location: "eastus"
+location: "centralus"
 acr_name: "consistlyacr"
 postgres_server: "consistly-postgres"
 app_gateway_name: "consistly-appgateway"
