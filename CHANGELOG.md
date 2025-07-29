@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed backend deployment conflicts and startup issues
 - Successfully deployed backend API to Azure App Service
 - Triggering frontend deployment to complete full application setup
+- Added frontend publish profile for Azure deployment
 
 ## [1.0.0] - 2024-01-15
 
