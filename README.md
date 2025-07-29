@@ -1,222 +1,194 @@
 # Consistly: A Daily Habit Tracker
 
-Consistly is a web application that helps users build and maintain daily habits by tracking their progress and visualizing consistency over time. The project is designed as a real-world DevOps sandbox, implementing modern software engineering and DevOps practices from day one.
+A modern web application for tracking daily habits and building better routines. Built with FastAPI backend and React frontend.
 
----
+## 🚀 Live Environments
 
-## Project Scope
+### Production
 
-- **User Authentication:** Secure sign-up and login for users.
-- **Habit Management:** Users can create, edit, and delete daily habits.
-- **Habit Tracking:** Mark habits as completed each day and view progress history.
-- **Dashboard:** Visualize streaks, completion statistics, and habit categories.
-- **(Optional) Habit Categories:** Organize habits by type (e.g., Health, Work).
+- **Frontend**: https://consistly-frontend-app-grgpcdhye5d4aqhk.centralus-01.azurewebsites.net
+- **Backend API**: https://consistly-backend-app.azurewebsites.net
+- **Azure Portal**: https://portal.azure.com
 
----
+### Staging
 
-## Tech Stack
+- **Frontend**: https://consistly-frontend-app-grgpcdhye5d4aqhk.centralus-01.azurewebsites.net (same as production)
+- **Backend API**: https://consistly-backend-app.azurewebsites.net (same as production)
 
-- **Backend:** FastAPI (Python)
-- **Frontend:** React.js
-- **DevOps:** GitHub, GitHub Actions, CI/CD, Branch Protection, Code Review
+## 🛠️ Tech Stack
 
----
+### Backend
 
-## Local Development Setup
+- **Framework**: FastAPI (Python)
+- **Database**: PostgreSQL
+- **Deployment**: Azure App Service
+- **Runtime**: Python 3.10
 
-### Backend (FastAPI)
+### Frontend
 
-1. **Navigate to backend folder:**
-   ```sh
-   cd backend
-   ```
-2. **Install dependencies:**
-   ```sh
-   bun install
-   ```
-3. **Run the backend server:**
-   ```sh
-   bun run src/index.js
-   ```
+- **Framework**: React.js
+- **Build Tool**: Create React App
+- **Deployment**: Azure App Service
+- **Runtime**: Node.js 18
 
-### Frontend (React)
+### DevOps
 
-1. **Navigate to frontend folder:**
-   ```sh
-   cd frontend
-   ```
-2. **Install dependencies:**
-   ```sh
-   bun install
-   ```
-3. **Run the frontend app:**
-   ```sh
-   bun run src/App.js
-   ```
+- **CI/CD**: GitHub Actions
+- **Container Registry**: GitHub Container Registry (GHCR)
+- **Monitoring**: Prometheus + Grafana
+- **Security**: Trivy + Bandit
 
----
+## 📋 Features
 
-## Docker-Based Local Setup
+- **User Authentication**: Secure login and registration
+- **Habit Management**: Create, edit, and delete daily habits
+- **Progress Tracking**: Visual progress indicators and streaks
+- **Dashboard**: Beautiful statistics and completion rates
+- **Responsive Design**: Works on desktop and mobile
 
-You can run the backend (FastAPI) and a local Postgres database using Docker Compose:
-
-1. **Build and start services:**
-   ```sh
-   docker-compose up --build
-   ```
-2. The backend will be available at [http://localhost:8000](http://localhost:8000).
-3. To stop services:
-   ```sh
-   docker-compose down
-   ```
-
----
-
-## Azure Cloud Deployment (with Terraform)
+## 🚀 Quick Start
 
 ### Prerequisites
 
-- [Terraform](https://developer.hashicorp.com/terraform/tutorials/aws-get-started/install-cli)
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli)
-- Docker
+- Python 3.10+
+- Node.js 18+
+- Docker (optional)
+- Azure CLI (for deployment)
 
-### 1. Provision Azure Infrastructure
+### Local Development
 
-1. **Login to Azure:**
-   ```sh
-   az login
-   ```
-2. **Initialize and apply Terraform:**
-   ```sh
-   cd infra
-   terraform init
-   terraform apply -auto-approve
-   ```
-   - Review and approve the plan when prompted.
-3. **Note the outputs:**
-   - ACR login server
-   - Postgres connection string
-   - Backend app public URL
+1. **Clone the repository**
 
-### 2. Manual Cloud Deployment
+   ```bash
+   git clone https://github.com/OIgboerika/Consistly_app.git
+   cd Consistly_app
+   ```
 
-1. **Build the Docker image:**
-   ```sh
-   docker build -t <acr_login_server_from_output>/consistly-backend:latest .
+2. **Backend Setup**
+
+   ```bash
+   pip install -r requirements.txt
+   uvicorn app.main:app --reload
    ```
-2. **Login to ACR:**
-   ```sh
-   az acr login --name <acr_name_from_output>
+
+3. **Frontend Setup**
+
+   ```bash
+   cd frontend
+   npm install
+   npm start
    ```
-3. **Push the image:**
-   ```sh
-   docker push <acr_login_server_from_output>/consistly-backend:latest
-   ```
-4. **Deploy:**
-   - The Container App is configured to pull the latest image from ACR.
-   - The backend will be accessible at the public URL output by Terraform.
-   - Environment variables (like the Postgres connection string) are set automatically.
+
+4. **Access the application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API Docs: http://localhost:8000/docs
+
+## 🏗️ CI/CD Pipeline
+
+The project includes a comprehensive CI/CD pipeline with:
+
+### Security Scanning
+
+- **Trivy**: Container and filesystem vulnerability scanning
+- **Bandit**: Python security linter
+- **CodeQL**: GitHub's semantic code analysis
+
+### Testing
+
+- **Backend**: Pytest with coverage reporting
+- **Frontend**: React Testing Library
+- **Linting**: Flake8 (Python) and ESLint (JavaScript)
+
+### Deployment
+
+- **Automatic**: Triggers on push to `main` branch
+- **Multi-environment**: Staging and production deployments
+- **Azure Integration**: Direct deployment to Azure App Service
+
+## 📊 Monitoring & Observability
+
+### Metrics Collection
+
+- **Prometheus**: Metrics collection and storage
+- **Node Exporter**: System metrics
+- **cAdvisor**: Container metrics
+- **Postgres Exporter**: Database metrics
+
+### Visualization
+
+- **Grafana**: Custom dashboards for application metrics
+- **Real-time Monitoring**: Live performance data
+- **Alerting**: Automated alerts for critical issues
+
+### Health Checks
+
+- **Backend**: `/health` endpoint for service health
+- **Frontend**: Built-in React error boundaries
+- **Database**: Connection health monitoring
+
+## 🔧 Configuration
+
+### Environment Variables
+
+```bash
+# Backend
+DATABASE_URL=postgresql://user:pass@host:port/db
+SECRET_KEY=your-secret-key
+ENVIRONMENT=production
+
+# Frontend
+REACT_APP_API_URL=https://consistly-backend-app.azurewebsites.net
+REACT_APP_ENVIRONMENT=production
+```
+
+### Azure Configuration
+
+- **Resource Group**: `consistly-rg`
+- **Region**: Central US
+- **App Service Plans**: Basic tier
+- **Container Registry**: Azure Container Registry
+
+## 📁 Project Structure
+
+```
+Consistly_app/
+├── app/                    # FastAPI backend
+│   ├── main.py            # Main application
+│   ├── api/               # API endpoints
+│   └── core/              # Core configuration
+├── frontend/              # React frontend
+│   ├── src/               # Source code
+│   ├── public/            # Static assets
+│   └── package.json       # Dependencies
+├── monitoring/            # Monitoring setup
+│   ├── prometheus.yml     # Prometheus config
+│   ├── grafana/           # Grafana dashboards
+│   └── alerts.yml         # Alert rules
+├── .github/workflows/     # CI/CD pipelines
+├── docker-compose.yml     # Local development
+└── README.md             # This file
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- FastAPI for the excellent backend framework
+- React team for the amazing frontend library
+- Azure for the cloud infrastructure
+- GitHub for the CI/CD platform
 
 ---
 
-## Live Environments
-
-### Production Environment
-
-- **Frontend:** https://consistly-frontend-app.azurewebsites.net
-- **Backend API:** https://consistly-backend-app.azurewebsites.net
-- **Azure Portal:** https://portal.azure.com → Resource Group: `consistly-rg`
-
-### Staging Environment
-
-- **Frontend:** https://consistly-frontend-app.azurewebsites.net
-- **Backend API:** https://consistly-backend-app.azurewebsites.net
-- **Azure Portal:** https://portal.azure.com → Resource Group: `consistly-rg`
-
-### Health Check Endpoints
-
-- Production Health: https://consistly-app.com/health
-- Staging Health: https://staging.consistly-app.com/health
-- API Health: https://api.consistly-app.com/health
-
-## CI/CD Pipeline
-
-The project uses a comprehensive CI/CD pipeline with the following stages:
-
-1. **Security Scanning**
-
-   - Trivy vulnerability scanning
-   - Bandit security linter for Python code
-   - Dependency vulnerability scanning
-
-2. **Testing**
-
-   - Backend unit tests with coverage
-   - Frontend unit tests
-   - Integration tests
-   - Code linting and quality checks
-
-3. **Build & Push**
-
-   - Multi-stage Docker builds
-   - Container image security scanning
-   - Push to GitHub Container Registry
-
-4. **Deployment**
-
-   - Automatic deployment to staging on `develop` branch
-   - Automatic deployment to production on `main` branch
-   - Health checks and rollback capabilities
-
-5. **Monitoring**
-   - Prometheus metrics collection
-   - Grafana dashboards
-   - AlertManager for notifications
-   - Application and infrastructure monitoring
-
-## Monitoring & Observability
-
-### Metrics Collected
-
-- Application response times
-- Error rates and status codes
-- System resource usage (CPU, Memory, Disk)
-- Database connection health
-- Container restart frequency
-
-### Alerts Configured
-
-- High CPU/Memory usage (>80% for 5 minutes)
-- Service downtime (>1 minute)
-- High error rates (>5% for 5 minutes)
-- High response times (>2 seconds 95th percentile)
-- Low disk space (<10%)
-
-### Accessing Monitoring
-
-- **Grafana Dashboard:** https://monitoring.consistly-app.com (admin/admin)
-- **Prometheus:** https://monitoring.consistly-app.com:9090
-- **AlertManager:** https://monitoring.consistly-app.com:9093
-
-## phase.md
-
-See the `phase.md` file in this repository for:
-
-- The live public URL to the deployed backend
-- Screenshots of provisioned Azure resources
-- Peer review PR link
-- Reflection on IaC and manual deployment
-
----
-
-## Contribution
-
-- Fork the repo and create a feature branch from `develop`.
-- Open a Pull Request for review and merging.
-- All contributions require passing CI and at least one review.
-
----
-
-## License
-
-MIT
+**Built with ❤️ for better habit tracking**
