@@ -267,7 +267,7 @@ jobs:
         run: |
           echo "Performing health check on Azure staging..."
           sleep 30  # Wait for containers to start
-          curl -f https://consistly-backend-staging.azurewebsites.net/health
+          curl -f https://consistly-backend-app.azurewebsites.net/health
           curl -f https://consistly-frontend-app.azurewebsites.net/health
 
   # Deploy to Azure Production
