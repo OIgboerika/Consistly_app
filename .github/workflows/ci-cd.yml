@@ -243,11 +243,17 @@ jobs:
         run: |
           echo "Deploying to Azure staging environment..."
 
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name consistlyacr --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)
+
           # Update backend container
           az container create \
             --resource-group consistly-rg \
             --name consistly-backend-staging \
             --image consistlyacr.azurecr.io/consistly-backend:${{ github.sha }} \
+            --registry-username $ACR_USERNAME \
+            --registry-password $ACR_PASSWORD \
             --dns-name-label consistly-backend-staging \
             --ports 8000 \
             --environment-variables \
@@ -262,6 +268,8 @@ jobs:
             --resource-group consistly-rg \
             --name consistly-frontend-staging \
             --image consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }} \
+            --registry-username $ACR_USERNAME \
+            --registry-password $ACR_PASSWORD \
             --dns-name-label consistly-frontend-staging \
             --ports 80 \
             --environment-variables \
@@ -296,11 +304,17 @@ jobs:
         run: |
           echo "Deploying to Azure production environment..."
 
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name consistlyacr --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)
+
           # Update backend container
           az container create \
             --resource-group consistly-rg \
             --name consistly-backend-prod \
             --image consistlyacr.azurecr.io/consistly-backend:${{ github.sha }} \
+            --registry-username $ACR_USERNAME \
+            --registry-password $ACR_PASSWORD \
             --dns-name-label consistly-backend-prod \
             --ports 8000 \
             --environment-variables \
@@ -315,6 +329,8 @@ jobs:
             --resource-group consistly-rg \
             --name consistly-frontend-prod \
             --image consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }} \
+            --registry-username $ACR_USERNAME \
+            --registry-password $ACR_PASSWORD \
             --dns-name-label consistly-frontend-prod \
             --ports 80 \
             --environment-variables \
