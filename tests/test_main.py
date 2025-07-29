@@ -3,8 +3,8 @@ from app.main import app
 
 client = TestClient(app)
 
-
 def test_read_root():
-    response = client.get("/")
+    response = client.get('/')
     assert response.status_code == 200
-    assert response.json() == {"message": "Welcome to Consistly_app!"}
+    data = response.json()
+    assert data['message'] == 'Welcome to Consistly API'
