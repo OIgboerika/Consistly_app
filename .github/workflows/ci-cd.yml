@@ -242,10 +242,19 @@ jobs:
       - name: Deploy Backend to Azure Web App
         run: |
           echo "Deploying backend to Azure Web App..."
+
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name consistlyacr --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)
+
+          # Configure container with ACR credentials
           az webapp config container set \
             --resource-group consistly-rg \
             --name consistly-backend-app \
-            --docker-custom-image-name consistlyacr.azurecr.io/consistly-backend:${{ github.sha }}
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-backend:${{ github.sha }} \
+            --docker-registry-server-url https://consistlyacr.azurecr.io \
+            --docker-registry-server-user $ACR_USERNAME \
+            --docker-registry-server-password $ACR_PASSWORD
 
           az webapp restart \
             --resource-group consistly-rg \
@@ -254,10 +263,19 @@ jobs:
       - name: Deploy Frontend to Azure Web App
         run: |
           echo "Deploying frontend to Azure Web App..."
+
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name consistlyacr --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)
+
+          # Configure container with ACR credentials
           az webapp config container set \
             --resource-group consistly-rg \
             --name consistly-frontend-app \
-            --docker-custom-image-name consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }}
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }} \
+            --docker-registry-server-url https://consistlyacr.azurecr.io \
+            --docker-registry-server-user $ACR_USERNAME \
+            --docker-registry-server-password $ACR_PASSWORD
 
           az webapp restart \
             --resource-group consistly-rg \
@@ -288,10 +306,19 @@ jobs:
       - name: Deploy Backend to Azure Web App
         run: |
           echo "Deploying backend to Azure Web App..."
+
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name consistlyacr --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)
+
+          # Configure container with ACR credentials
           az webapp config container set \
             --resource-group consistly-rg \
             --name consistly-backend-prod \
-            --docker-custom-image-name consistlyacr.azurecr.io/consistly-backend:${{ github.sha }}
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-backend:${{ github.sha }} \
+            --docker-registry-server-url https://consistlyacr.azurecr.io \
+            --docker-registry-server-user $ACR_USERNAME \
+            --docker-registry-server-password $ACR_PASSWORD
 
           az webapp restart \
             --resource-group consistly-rg \
@@ -300,10 +327,19 @@ jobs:
       - name: Deploy Frontend to Azure Web App
         run: |
           echo "Deploying frontend to Azure Web App..."
+
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name consistlyacr --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)
+
+          # Configure container with ACR credentials
           az webapp config container set \
             --resource-group consistly-rg \
             --name consistly-frontend-prod \
-            --docker-custom-image-name consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }}
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }} \
+            --docker-registry-server-url https://consistlyacr.azurecr.io \
+            --docker-registry-server-user $ACR_USERNAME \
+            --docker-registry-server-password $ACR_PASSWORD
 
           az webapp restart \
             --resource-group consistly-rg \
