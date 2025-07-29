@@ -17,23 +17,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
-
       - name: Create backend deployment package
         run: |
           mkdir -p backend-package
           cp -r app backend-package/
-          cp -r tests backend-package/
           cp requirements.txt backend-package/
           cp startup.txt backend-package/
-          cp .deployment backend-package/
-          cp web.config backend-package/
-          cp README.md backend-package/
-          cp CHANGELOG.md backend-package/
-          cp .gitignore backend-package/
 
       - name: Login to Azure
         uses: azure/login@v1
