@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_WEBAPP_NAME: consistly-frontend-app-grgpcdhye5d4aqhk
+  AZURE_WEBAPP_NAME: consistly-frontend-app
   AZURE_WEBAPP_PACKAGE_PATH: "./frontend/build"
 
 jobs:
@@ -49,7 +49,6 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
-        continue-on-error: true
 
       - name: Deploy using Azure CLI (fallback)
         if: failure()
