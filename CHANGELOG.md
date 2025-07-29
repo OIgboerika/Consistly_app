@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **CRITICAL: Fix frontend deployment - still showing default Azure page**
 - **FIXED: Corrected web app name in deployment workflow**
 - **FINAL: Deploy with correct web app name and domain URL**
+- **DEPLOY: Fresh publish profile updated - trigger deployment**
 
 ### Changed
 
