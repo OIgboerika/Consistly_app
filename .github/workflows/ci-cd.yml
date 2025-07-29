@@ -1,0 +1,384 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  AZURE_REGISTRY: consistlyacr.azurecr.io
+  REPO_OWNER_LOWER: ${{ github.repository_owner }}
+
+jobs:
+  # Security and Quality Checks
+  security-scan:
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: "trivy-results.sarif"
+
+      - name: Run Bandit security linter
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install Bandit
+        run: pip install bandit
+
+      - name: Run Bandit scan
+        run: bandit -r app/ -f json -o bandit-report.json || true
+
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bandit-security-report
+          path: bandit-report.json
+
+  # Backend Tests
+  backend-test:
+    runs-on: ubuntu-latest
+    needs: security-scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov flake8
+
+      - name: Lint with flake8
+        run: |
+          flake8 app tests --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 app tests --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Run tests with coverage
+        run: |
+          pytest --cov=app --cov-report=xml --cov-report=html
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: htmlcov/
+
+  # Frontend Tests
+  frontend-test:
+    runs-on: ubuntu-latest
+    needs: security-scan
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: frontend/package.json
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: |
+          rm -rf node_modules package-lock.json
+          npm install --legacy-peer-deps
+          npm list react-scripts
+
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: npm run test -- --coverage --watchAll=false --passWithNoTests
+        continue-on-error: true
+
+      - name: Upload frontend coverage
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/
+
+  # Build and Push Container Images
+  build-and-push:
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Azure Container Registry
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to Azure Container Registry
+        run: |
+          az acr login --name consistlyacr
+
+      - name: Set lowercase repository owner
+        run: echo "REPO_OWNER_LOWER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/consistly-backend
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha
+
+      - name: Build and push Backend image to GitHub Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Frontend image to GitHub Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/consistly-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Backend image to Azure Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ env.AZURE_REGISTRY }}/consistly-backend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Frontend image to Azure Registry
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ env.AZURE_REGISTRY }}/consistly-frontend:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # Deploy to Azure Staging
+  deploy-azure-staging:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/develop'
+    # environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure staging
+        run: |
+          echo "Deploying to Azure staging environment..."
+
+          # Update backend container
+          az container create \
+            --resource-group consistly-rg \
+            --name consistly-backend-staging \
+            --image consistlyacr.azurecr.io/consistly-backend:${{ github.sha }} \
+            --dns-name-label consistly-backend-staging \
+            --ports 8000 \
+            --environment-variables \
+              DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              SECRET_KEY="${{ secrets.STAGING_SECRET_KEY }}" \
+              ENVIRONMENT="staging" \
+            --restart-policy Always \
+            --output none
+
+          # Update frontend container
+          az container create \
+            --resource-group consistly-rg \
+            --name consistly-frontend-staging \
+            --image consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }} \
+            --dns-name-label consistly-frontend-staging \
+            --ports 80 \
+            --environment-variables \
+              REACT_APP_API_URL="http://consistly-backend-staging.centralus.azurecontainer.io:8000" \
+              REACT_APP_ENVIRONMENT="staging" \
+            --restart-policy Always \
+            --output none
+
+      - name: Health check Azure staging
+        run: |
+          echo "Performing health check on Azure staging..."
+          sleep 30  # Wait for containers to start
+          curl -f http://consistly-backend-staging.centralus.azurecontainer.io:8000/health
+          curl -f http://consistly-frontend-staging.centralus.azurecontainer.io/health
+
+  # Deploy to Azure Production
+  deploy-azure-production:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    # environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure production
+        run: |
+          echo "Deploying to Azure production environment..."
+
+          # Update backend container
+          az container create \
+            --resource-group consistly-rg \
+            --name consistly-backend-prod \
+            --image consistlyacr.azurecr.io/consistly-backend:${{ github.sha }} \
+            --dns-name-label consistly-backend-prod \
+            --ports 8000 \
+            --environment-variables \
+              DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              SECRET_KEY="${{ secrets.PRODUCTION_SECRET_KEY }}" \
+              ENVIRONMENT="production" \
+            --restart-policy Always \
+            --output none
+
+          # Update frontend container
+          az container create \
+            --resource-group consistly-rg \
+            --name consistly-frontend-prod \
+            --image consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }} \
+            --dns-name-label consistly-frontend-prod \
+            --ports 80 \
+            --environment-variables \
+              REACT_APP_API_URL="https://api.consistly-app.com" \
+              REACT_APP_ENVIRONMENT="production" \
+            --restart-policy Always \
+            --output none
+
+      - name: Health check Azure production
+        run: |
+          echo "Performing health check on Azure production..."
+          sleep 30  # Wait for containers to start
+          curl -f http://consistly-backend-prod.centralus.azurecontainer.io:8000/health
+          curl -f http://consistly-frontend-prod.centralus.azurecontainer.io/health
+
+  # Deploy to Staging (Local)
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/develop'
+    # environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to staging environment
+        run: |
+          echo "Deploying to staging environment..."
+          chmod +x scripts/deploy-staging.sh
+          ./scripts/deploy-staging.sh
+
+      - name: Health check staging
+        run: |
+          echo "Performing health check on staging..."
+          curl -f http://localhost:8001/health
+          curl -f f http://localhost:8080/health
+
+  # Deploy to Production (Local)
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    # environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to production environment
+        run: |
+          echo "Deploying to production environment..."
+          chmod +x scripts/deploy-production.sh
+          ./scripts/deploy-production.sh
+
+      - name: Health check production
+        run: |
+          echo "Performing health check on production..."
+          curl -f http://localhost:8000/health
+          curl -f http://localhost/health
+
+  # Monitoring and Observability
+  monitoring-setup:
+    runs-on: ubuntu-latest
+    needs:
+      [
+        deploy-azure-staging,
+        deploy-azure-production,
+        deploy-staging,
+        deploy-production,
+      ]
+    if: always()
+    steps:
+      - name: Setup monitoring alerts
+        run: |
+          echo "Setting up monitoring and alerts..."
+          # Add monitoring setup commands
+          # Example: Configure CloudWatch alarms, Prometheus alerts, etc.
+
+      - name: Verify monitoring dashboard
+        run: |
+          echo "Verifying monitoring dashboard functionality..."

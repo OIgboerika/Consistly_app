@@ -2,5 +2,57 @@
 .pyre/ 
 .terraform/ 
 
+# Node.js/Frontend
 node_modules/
 build/
+dist/
+frontend/node_modules/
+frontend/build/
+frontend/dist/
+frontend/coverage/
+frontend/.cache/
+frontend/.env*
+
+# Python/Backend
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+htmlcov/
+.coverage
+coverage.xml
+.env*
+
+# Development/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Logs & Temporary
+*.log
+*.tmp
+*.temp
+logs/
+
+# Docker
+.dockerignore
+
+# Monitoring/Data
+monitoring/data/
+monitoring/grafana/data/
+monitoring/prometheus/data/
+
+# SSL Certificates
+nginx/ssl/
+*.pem
+*.key
+*.crt
+
+# Terraform
+infra/terraform.tfstate*

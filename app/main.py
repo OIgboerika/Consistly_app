@@ -1,6 +1,7 @@
 from fastapi import FastAPI
-from app.api.v1 import endpoints
 
-app = FastAPI(title="Consistly_app")
+app = FastAPI()
 
-app.include_router(endpoints.router)
+@app.get('/')
+def root():
+    return {'message': 'Welcome to Consistly API'}

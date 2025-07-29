@@ -1,0 +1,142 @@
+# Azure Configuration for Consistly Application
+# This file contains all Azure-specific configuration settings
+
+# Resource Configuration
+resource_group: "consistly-rg"
+location: "centralus"
+acr_name: "consistlyacr"
+postgres_server: "consistly-postgres"
+app_gateway_name: "consistly-appgateway"
+vnet_name: "consistly-vnet"
+subnet_name: "default"
+
+# Database Configuration
+database:
+  name: "consistly_db"
+  admin_user: "consistlyadmin"
+  admin_password: "ConsistlySecurePass123!"
+  version: "14"
+  sku: "Standard_B1ms"
+  storage_size: "32"
+
+# Container Registry Configuration
+acr:
+  sku: "Basic"
+  admin_enabled: true
+
+# Staging Environment
+staging:
+  backend:
+    name: "consistly-backend-staging"
+    dns_label: "consistly-backend-staging"
+    port: 8000
+    environment_variables:
+      DATABASE_URL: "postgresql://consistlyadmin:ConsistlySecurePass123!@consistly-postgres.postgres.database.azure.com:5432/consistly_db"
+      SECRET_KEY: "staging-secret-key"
+      ENVIRONMENT: "staging"
+      LOG_LEVEL: "DEBUG"
+  
+  frontend:
+    name: "consistly-frontend-staging"
+    dns_label: "consistly-frontend-staging"
+    port: 80
+    environment_variables:
+      REACT_APP_API_URL: "http://consistly-backend-staging.eastus.azurecontainer.io:8000"
+      REACT_APP_ENVIRONMENT: "staging"
+
+# Production Environment
+production:
+  backend:
+    name: "consistly-backend-prod"
+    dns_label: "consistly-backend-prod"
+    port: 8000
+    environment_variables:
+      DATABASE_URL: "postgresql://consistlyadmin:ConsistlySecurePass123!@consistly-postgres.postgres.database.azure.com:5432/consistly_db"
+      SECRET_KEY: "production-secret-key"
+      ENVIRONMENT: "production"
+      LOG_LEVEL: "INFO"
+  
+  frontend:
+    name: "consistly-frontend-prod"
+    dns_label: "consistly-frontend-prod"
+    port: 80
+    environment_variables:
+      REACT_APP_API_URL: "https://api.consistly-app.com"
+      REACT_APP_ENVIRONMENT: "production"
+
+# Application Gateway Configuration
+app_gateway:
+  sku: "Standard_v2"
+  tier: "Standard"
+  capacity: 2
+  frontend_port: 80
+  backend_port: 80
+  protocol: "Http"
+
+# Monitoring Configuration
+monitoring:
+  log_analytics_workspace: "consistly-logs"
+  application_insights: "consistly-insights"
+  alert_rules:
+    - name: "high-cpu-usage"
+      condition: "cpu_percentage > 80"
+    - name: "high-memory-usage"
+      condition: "memory_percentage > 80"
+    - name: "database-connection-failed"
+      condition: "database_connection_failed"
+
+# Security Configuration
+security:
+  key_vault_name: "consistly-kv"
+  network_security_group: "consistly-nsg"
+  firewall_rules:
+    - name: "allow-https"
+      protocol: "tcp"
+      port: 443
+      priority: 100
+    - name: "allow-http"
+      protocol: "tcp"
+      port: 80
+      priority: 110
+    - name: "allow-postgres"
+      protocol: "tcp"
+      port: 5432
+      priority: 120
+
+# Cost Optimization
+cost_optimization:
+  reserved_instances: false
+  auto_shutdown: true
+  scaling:
+    min_instances: 1
+    max_instances: 5
+    target_cpu_percentage: 70
+
+# Backup Configuration
+backup:
+  database:
+    retention_days: 30
+    backup_frequency: "daily"
+  storage:
+    retention_days: 90
+    backup_frequency: "weekly"
+
+# SSL/TLS Configuration
+ssl:
+  certificate_name: "consistly-ssl-cert"
+  certificate_path: "./ssl/consistly-cert.pfx"
+  certificate_password: "your-cert-password"
+  domains:
+    - "consistly-app.com"
+    - "api.consistly-app.com"
+    - "monitoring.consistly-app.com"
+
+# CI/CD Integration
+cicd:
+  service_principal_name: "consistly-sp"
+  github_secrets:
+    - "AZURE_CREDENTIALS"
+    - "ACR_USERNAME"
+    - "ACR_PASSWORD"
+    - "DATABASE_URL"
+    - "SECRET_KEY" 
