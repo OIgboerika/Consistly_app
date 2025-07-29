@@ -13,15 +13,15 @@ export COMPOSE_FILE=docker-compose.staging.yml
 
 # Pull latest images
 echo "📥 Pulling latest images..."
-docker-compose -f $COMPOSE_FILE pull
+docker compose -f $COMPOSE_FILE pull
 
 # Stop existing containers
 echo "🛑 Stopping existing containers..."
-docker-compose -f $COMPOSE_FILE down
+docker compose -f $COMPOSE_FILE down
 
 # Start new containers
 echo "▶️ Starting new containers..."
-docker-compose -f $COMPOSE_FILE up -d
+docker compose -f $COMPOSE_FILE up -d
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to be healthy..."
@@ -47,7 +47,7 @@ else
 fi
 
 # Database health check
-if docker-compose -f $COMPOSE_FILE exec -T db pg_isready -U myuser -d mydb_staging; then
+if docker compose -f $COMPOSE_FILE exec -T db pg_isready -U myuser -d mydb_staging; then
     echo "✅ Database health check passed"
 else
     echo "❌ Database health check failed"

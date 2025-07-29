@@ -13,19 +13,19 @@ export COMPOSE_FILE=docker-compose.prod.yml
 
 # Pull latest images
 echo "📥 Pulling latest images..."
-docker-compose -f $COMPOSE_FILE pull
+docker compose -f $COMPOSE_FILE pull
 
 # Create backup of current deployment
 echo "💾 Creating backup of current deployment..."
-docker-compose -f $COMPOSE_FILE ps -q > /tmp/current_containers.txt
+docker compose -f $COMPOSE_FILE ps -q > /tmp/current_containers.txt
 
 # Stop existing containers
 echo "🛑 Stopping existing containers..."
-docker-compose -f $COMPOSE_FILE down
+docker compose -f $COMPOSE_FILE down
 
 # Start new containers
 echo "▶️ Starting new containers..."
-docker-compose -f $COMPOSE_FILE up -d
+docker compose -f $COMPOSE_FILE up -d
 
 # Wait for services to be healthy
 echo "⏳ Waiting for services to be healthy..."
@@ -40,8 +40,8 @@ if curl -f http://localhost:8000/health; then
 else
     echo "❌ Backend health check failed"
     echo "🔄 Rolling back deployment..."
-    docker-compose -f $COMPOSE_FILE down
-    docker-compose -f $COMPOSE_FILE up -d
+    docker compose -f $COMPOSE_FILE down
+    docker compose -f $COMPOSE_FILE up -d
     exit 1
 fi
 
@@ -51,19 +51,19 @@ if curl -f http://localhost/health; then
 else
     echo "❌ Frontend health check failed"
     echo "🔄 Rolling back deployment..."
-    docker-compose -f $COMPOSE_FILE down
-    docker-compose -f $COMPOSE_FILE up -d
+    docker compose -f $COMPOSE_FILE down
+    docker compose -f $COMPOSE_FILE up -d
     exit 1
 fi
 
 # Database health check
-if docker-compose -f $COMPOSE_FILE exec -T db pg_isready -U myuser -d mydb; then
+if docker compose -f $COMPOSE_FILE exec -T db pg_isready -U myuser -d mydb; then
     echo "✅ Database health check passed"
 else
     echo "❌ Database health check failed"
     echo "🔄 Rolling back deployment..."
-    docker-compose -f $COMPOSE_FILE down
-    docker-compose -f $COMPOSE_FILE up -d
+    docker compose -f $COMPOSE_FILE down
+    docker compose -f $COMPOSE_FILE up -d
     exit 1
 fi
 
