@@ -46,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed Azure login credentials in deployment workflows
 - Resolved ajv module conflicts in frontend build process
 - Fixed backend deployment conflicts and startup issues
+- Successfully deployed backend API to Azure App Service
 
 ## [1.0.0] - 2024-01-15
 
