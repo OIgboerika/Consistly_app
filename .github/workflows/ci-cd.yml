@@ -151,10 +151,6 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Log in to Azure Container Registry
-        run: |
-          az acr login --name consistlyacr
-
       - name: Get ACR credentials
         id: acr-credentials
         run: |
@@ -167,6 +163,10 @@ jobs:
           registry: ${{ env.AZURE_REGISTRY }}
           username: ${{ steps.acr-credentials.outputs.username }}
           password: ${{ steps.acr-credentials.outputs.password }}
+
+      - name: Log in to Azure Container Registry
+        run: |
+          az acr login --name consistlyacr
 
       - name: Set lowercase repository owner
         run: echo "REPO_OWNER_LOWER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
