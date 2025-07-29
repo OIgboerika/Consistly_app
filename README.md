@@ -123,15 +123,15 @@ You can run the backend (FastAPI) and a local Postgres database using Docker Com
 
 ### Production Environment
 
-- **Frontend:** https://consistly-app.com
-- **Backend API:** https://api.consistly-app.com
-- **Monitoring Dashboard:** https://monitoring.consistly-app.com
+- **Frontend:** https://consistly-frontend-app.azurewebsites.net
+- **Backend API:** https://consistly-backend-app.azurewebsites.net
+- **Azure Portal:** https://portal.azure.com → Resource Group: `consistly-rg`
 
 ### Staging Environment
 
-- **Frontend:** https://staging.consistly-app.com
-- **Backend API:** https://staging-api.consistly-app.com
-- **Monitoring Dashboard:** https://staging-monitoring.consistly-app.com
+- **Frontend:** https://consistly-frontend-app.azurewebsites.net
+- **Backend API:** https://consistly-backend-app.azurewebsites.net
+- **Azure Portal:** https://portal.azure.com → Resource Group: `consistly-rg`
 
 ### Health Check Endpoints
 
