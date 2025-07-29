@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automated deployment to staging and production environments
 - Monitoring and observability setup
 - **CI/CD Pipeline Trigger**: Added changelog entry to test pipeline functionality
+- Backend deployment workflow for Azure App Service
+- Frontend deployment workflow for Azure App Service
+- Startup configuration for FastAPI with gunicorn
+- Azure publish profile integration
 
 ### Changed
 
@@ -25,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved security headers in nginx configuration
 - Updated GitHub Actions workflow for full CI/CD pipeline
 - Fixed flake8 linting errors in Python code
+- Updated requirements.txt to include gunicorn for production deployment
+- Enhanced CI/CD pipeline with Azure deployment capabilities
 
 ### Security
 
@@ -32,6 +38,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integrated Bandit security linter for Python code
 - Implemented security headers in nginx configuration
 - Added dependency vulnerability scanning
+
+### Fixed
+
+- Resolved React dependency issues in frontend deployment
+- Fixed Azure login credentials in deployment workflows
+- Resolved ajv module conflicts in frontend build process
 
 ## [1.0.0] - 2024-01-15
 
