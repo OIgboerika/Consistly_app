@@ -18,6 +18,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Automated deployment to staging and production environments
 - Monitoring and observability setup
 - **CI/CD Pipeline Trigger**: Added changelog entry to test pipeline functionality
+- Backend deployment workflow for Azure App Service
+- Frontend deployment workflow for Azure App Service
+- Startup configuration for FastAPI with uvicorn
+- Azure publish profile integration
+- Added frontend publish profile for Azure deployment
+- **URGENT: Trigger frontend deployment for video presentation**
+- **CRITICAL: Fix frontend deployment - still showing default Azure page**
+- **FIXED: Corrected web app name in deployment workflow**
+- **FINAL: Deploy with correct web app name and domain URL**
+- **DEPLOY: Fresh publish profile updated - trigger deployment**
 
 ### Changed
 
@@ -25,6 +35,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved security headers in nginx configuration
 - Updated GitHub Actions workflow for full CI/CD pipeline
 - Fixed flake8 linting errors in Python code
+- Updated requirements.txt to include gunicorn for production deployment
+- Enhanced CI/CD pipeline with Azure deployment capabilities
+- Simplified backend deployment to use uvicorn instead of gunicorn
+- Updated frontend deployment workflow with correct Azure web app name
+- Fixed ajv dependency conflicts in frontend build
+- Added Azure login step to frontend deployment workflow
+- Updated backend startup command to use uvicorn with pip install
+- Fixed backend deployment package structure
 
 ### Security
 
@@ -32,6 +50,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integrated Bandit security linter for Python code
 - Implemented security headers in nginx configuration
 - Added dependency vulnerability scanning
+
+### Fixed
+
+- Resolved React dependency issues in frontend deployment
+- Fixed Azure login credentials in deployment workflows
+- Resolved ajv module conflicts in frontend build process
+- Fixed backend deployment conflicts and startup issues
+- Successfully deployed backend API to Azure App Service
+- Triggering frontend deployment to complete full application setup
+- Added frontend publish profile for Azure deployment
+- Resolved frontend build errors with react-scripts permissions
+- Fixed backend startup issues with gunicorn/uvicorn
+- Corrected Azure web app names in deployment workflows
+- Fixed frontend URL in README documentation
 
 ## [1.0.0] - 2024-01-15
 
@@ -77,16 +109,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved project structure and organization
 - Enhanced error handling and validation
 
-## [0.1.0] - 2024-01-05
+## [0.1.0] - 2024-01-XX
 
 ### Added
 
-- Initial project setup
-- Basic FastAPI application structure
-- Project documentation and README
-- Development environment configuration
+- Initial project setup with FastAPI backend and React frontend
+- CI/CD pipeline with GitHub Actions
+- Docker containerization for both frontend and backend
+- Security scanning with Trivy and Bandit
+- Monitoring setup with Prometheus and Grafana
+- Azure deployment configuration
+- Comprehensive testing framework
+- Health check endpoints
+- Automated deployment workflows
 
----
+### Changed
+
+- Updated project structure for better organization
+- Enhanced security scanning in CI/CD pipeline
+- Improved Docker configurations for production deployment
+
+### Fixed
+
+- Resolved initial setup issues
+- Fixed Docker build configurations
+- Corrected CI/CD workflow syntax errors
+
+## [0.0.1] - 2024-01-XX
+
+### Added
+
+- Project initialization
+- Basic FastAPI backend structure
+- React frontend setup
+- Initial documentation
 
 ## Release Notes
 
