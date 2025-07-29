@@ -1,0 +1,42 @@
+name: Deploy FastAPI Backend to Azure
+
+on:
+  push:
+    branches: [main, develop]
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: consistly-backend-app
+  AZURE_WEBAPP_PACKAGE_PATH: "./backend-package"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Create backend deployment package
+        run: |
+          mkdir -p backend-package
+          cp -r app backend-package/
+          cp requirements.txt backend-package/
+          echo "pip install -r requirements.txt && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000" > backend-package/startup.txt
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE }}
+          package: ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}
