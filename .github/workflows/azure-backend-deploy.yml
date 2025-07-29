@@ -34,11 +34,20 @@ jobs:
           cp CHANGELOG.md backend-package/
           cp .gitignore backend-package/
 
-      - name: Install dependencies
+      - name: Install dependencies locally
         working-directory: ./backend-package
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install gunicorn
+
+      - name: Create startup script
+        working-directory: ./backend-package
+        run: |
+          echo '#!/bin/bash' > start.sh
+          echo 'cd /home/site/wwwroot' >> start.sh
+          echo 'python -m gunicorn --bind 0.0.0.0:8000 app.main:app' >> start.sh
+          chmod +x start.sh
 
       - name: Login to Azure
         uses: azure/login@v1
@@ -54,4 +63,4 @@ jobs:
 
       - name: Configure startup command
         run: |
-          az webapp config set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group consistly-rg --startup-file "gunicorn --bind 0.0.0.0:8000 app.main:app"
+          az webapp config set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group consistly-rg --startup-file "python -m gunicorn --bind 0.0.0.0:8000 app.main:app"
