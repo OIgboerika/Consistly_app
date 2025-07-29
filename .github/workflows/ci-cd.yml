@@ -240,16 +240,28 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Backend to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: "consistly-backend-staging"
-          images: consistlyacr.azurecr.io/consistly-backend:${{ github.sha }}
+        run: |
+          echo "Deploying backend to Azure Web App..."
+          az webapp config container set \
+            --resource-group consistly-rg \
+            --name consistly-backend-staging \
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-backend:${{ github.sha }}
+
+          az webapp restart \
+            --resource-group consistly-rg \
+            --name consistly-backend-staging
 
       - name: Deploy Frontend to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: "consistly-frontend-staging"
-          images: consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }}
+        run: |
+          echo "Deploying frontend to Azure Web App..."
+          az webapp config container set \
+            --resource-group consistly-rg \
+            --name consistly-frontend-staging \
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }}
+
+          az webapp restart \
+            --resource-group consistly-rg \
+            --name consistly-frontend-staging
 
       - name: Health check Azure staging
         run: |
@@ -274,16 +286,28 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Backend to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: "consistly-backend-prod"
-          images: consistlyacr.azurecr.io/consistly-backend:${{ github.sha }}
+        run: |
+          echo "Deploying backend to Azure Web App..."
+          az webapp config container set \
+            --resource-group consistly-rg \
+            --name consistly-backend-prod \
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-backend:${{ github.sha }}
+
+          az webapp restart \
+            --resource-group consistly-rg \
+            --name consistly-backend-prod
 
       - name: Deploy Frontend to Azure Web App
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: "consistly-frontend-prod"
-          images: consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }}
+        run: |
+          echo "Deploying frontend to Azure Web App..."
+          az webapp config container set \
+            --resource-group consistly-rg \
+            --name consistly-frontend-prod \
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }}
+
+          az webapp restart \
+            --resource-group consistly-rg \
+            --name consistly-frontend-prod
 
       - name: Health check Azure production
         run: |
