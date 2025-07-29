@@ -256,19 +256,19 @@ jobs:
           echo "Deploying frontend to Azure Web App..."
           az webapp config container set \
             --resource-group consistly-rg \
-            --name consistly-frontend-staging \
+            --name consistly-frontend-app \
             --docker-custom-image-name consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }}
 
           az webapp restart \
             --resource-group consistly-rg \
-            --name consistly-frontend-staging
+            --name consistly-frontend-app
 
       - name: Health check Azure staging
         run: |
           echo "Performing health check on Azure staging..."
           sleep 30  # Wait for containers to start
           curl -f https://consistly-backend-staging.azurewebsites.net/health
-          curl -f https://consistly-frontend-staging.azurewebsites.net/health
+          curl -f https://consistly-frontend-app.azurewebsites.net/health
 
   # Deploy to Azure Production
   deploy-azure-production:
