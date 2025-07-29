@@ -26,11 +26,14 @@ jobs:
 
       - name: Install dependencies
         working-directory: ./frontend
-        run: npm install
+        run: |
+          npm install
+          chmod +x node_modules/.bin/*
 
       - name: Build React app
         working-directory: ./frontend
-        run: npm run build
+        run: |
+          npx react-scripts build
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v2
