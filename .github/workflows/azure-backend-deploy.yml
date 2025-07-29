@@ -26,11 +26,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install gunicorn
 
       - name: Create startup command file
         run: |
-          echo "gunicorn app.main:app --bind 0.0.0.0:8000 --workers 2" > startup.txt
+          echo "gunicorn --bind 0.0.0.0:8000 app.main:app" > startup.txt
 
       - name: Login to Azure
         uses: azure/login@v1
@@ -46,4 +45,4 @@ jobs:
 
       - name: Configure startup command
         run: |
-          az webapp config set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group consistly-rg --startup-file "gunicorn app.main:app --bind 0.0.0.0:8000 --workers 2"
+          az webapp config set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group consistly-rg --startup-file "gunicorn --bind 0.0.0.0:8000 app.main:app"
