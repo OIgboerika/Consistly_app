@@ -240,28 +240,18 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Backend to Azure Web App
-        run: |
-          echo "Deploying backend to Azure Web App..."
-          az webapp config container set \
-            --resource-group consistly-rg \
-            --name consistly-backend-staging \
-            --docker-custom-image-name consistlyacr.azurecr.io/consistly-backend:${{ github.sha }}
-
-          az webapp restart \
-            --resource-group consistly-rg \
-            --name consistly-backend-staging
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: "consistly-backend-app"
+          publish-profile: ${{ secrets.AZURE_WEBAPP_BACKEND_PUBLISH_PROFILE }}
+          images: consistlyacr.azurecr.io/consistly-backend:${{ github.sha }}
 
       - name: Deploy Frontend to Azure Web App
-        run: |
-          echo "Deploying frontend to Azure Web App..."
-          az webapp config container set \
-            --resource-group consistly-rg \
-            --name consistly-frontend-app \
-            --docker-custom-image-name consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }}
-
-          az webapp restart \
-            --resource-group consistly-rg \
-            --name consistly-frontend-app
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: "consistly-frontend-app"
+          publish-profile: ${{ secrets.AZURE_WEBAPP_FRONTEND_PUBLISH_PROFILE }}
+          images: consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }}
 
       - name: Health check Azure staging
         run: |
