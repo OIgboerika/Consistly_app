@@ -1,6 +1,6 @@
 # Consistly: A Daily Habit Tracker
 
-A modern web application for tracking daily habits and building better routines. Built with FastAPI backend and React frontend.
+A modern web application for tracking daily habits and building better routines. Built with FastAPI backend and React frontend. Updated for backend deployment fix.
 
 ## 🚀 Live Environments
 
