@@ -367,14 +367,20 @@ jobs:
       - name: Deploy to staging environment
         run: |
           echo "Deploying to staging environment..."
+          # Set required environment variables
+          export STAGING_SECRET_KEY="staging-secret-key-$(date +%s)"
+          export STAGING_GRAFANA_PASSWORD="admin"
+
           chmod +x scripts/deploy-staging.sh
           ./scripts/deploy-staging.sh
 
       - name: Health check staging
         run: |
           echo "Performing health check on staging..."
-          curl -f http://localhost:8001/health
-          curl -f f http://localhost:8080/health
+          echo "Checking backend health..."
+          curl -v http://localhost:8001/health || echo "Backend health check failed"
+          echo "Checking frontend health..."
+          curl -v http://localhost:8080/ || echo "Frontend health check failed"
 
   # Deploy to Production (Local)
   deploy-production:

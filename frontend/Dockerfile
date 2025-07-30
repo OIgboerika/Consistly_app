@@ -7,13 +7,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install all dependencies (including dev dependencies for build)
-RUN npm install
+RUN npm ci --legacy-peer-deps
 
 # Copy source code
 COPY . .
 
 # Fix permissions and build the app
-RUN chmod +x node_modules/.bin/* && npm run build
+RUN npm install -g react-scripts && npm run build
 
 # Production stage
 FROM nginx:alpine

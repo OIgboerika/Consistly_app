@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # Backend API
   backend:
@@ -9,8 +7,9 @@ services:
       - "8001:8000"
     environment:
       - DATABASE_URL=postgresql://myuser:mypassword@db:5432/mydb_staging
-      - SECRET_KEY=${STAGING_SECRET_KEY}
+      - SECRET_KEY=${STAGING_SECRET_KEY:-staging-secret-key-default}
       - ENVIRONMENT=staging
+      - PORT=8000
     depends_on:
       - db
     networks:
@@ -35,7 +34,7 @@ services:
       - consistly-staging-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
