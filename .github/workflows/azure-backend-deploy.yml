@@ -2,7 +2,7 @@ name: Deploy FastAPI Backend to Azure
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   workflow_dispatch:
 
 env:
@@ -17,12 +17,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
       - name: Create backend deployment package
         run: |
           mkdir -p backend-package
           cp -r app backend-package/
           cp requirements.txt backend-package/
-          cp startup.txt backend-package/
+          echo "pip install -r requirements.txt && python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-80}" > backend-package/startup.txt
 
       - name: Login to Azure
         uses: azure/login@v1
@@ -38,4 +43,4 @@ jobs:
 
       - name: Configure startup command with dependency installation
         run: |
-          az webapp config set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group consistly-rg --startup-file "pip install -r requirements.txt && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+          az webapp config set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group consistly-rg --startup-file "pip install -r requirements.txt && python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-80}"

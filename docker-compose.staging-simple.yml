@@ -1,0 +1,68 @@
+services:
+  # Backend API
+  backend:
+    image: ghcr.io/oigboerika/consistly-backend:develop
+    container_name: consistly-backend-staging
+    ports:
+      - "8001:8000"
+    environment:
+      - DATABASE_URL=postgresql://myuser:mypassword@db:5432/mydb_staging
+      - SECRET_KEY=${STAGING_SECRET_KEY:-staging-secret-key-default}
+      - ENVIRONMENT=staging
+      - PORT=8000
+    depends_on:
+      - db
+    networks:
+      - consistly-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Frontend
+  frontend:
+    image: ghcr.io/oigboerika/consistly-frontend:develop
+    container_name: consistly-frontend-staging
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - consistly-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Database
+  db:
+    image: postgres:14
+    container_name: consistly-db-staging
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb_staging
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+    networks:
+      - consistly-staging-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb_staging"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  postgres_staging_data:
+
+networks:
+  consistly-staging-network:
+    driver: bridge

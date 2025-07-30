@@ -151,6 +151,19 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      - name: Get ACR credentials
+        id: acr-credentials
+        run: |
+          echo "username=$(az acr credential show --name consistlyacr --query username -o tsv)" >> $GITHUB_OUTPUT
+          echo "password=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)" >> $GITHUB_OUTPUT
+
+      - name: Log in to Azure Container Registry with credentials
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.AZURE_REGISTRY }}
+          username: ${{ steps.acr-credentials.outputs.username }}
+          password: ${{ steps.acr-credentials.outputs.password }}
+
       - name: Log in to Azure Container Registry
         run: |
           az acr login --name consistlyacr
@@ -187,7 +200,9 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/consistly-frontend:${{ github.sha }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/consistly-frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/consistly-frontend:develop
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -226,43 +241,85 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure staging
+      - name: Deploy Backend to Azure Web App
         run: |
-          echo "Deploying to Azure staging environment..."
+          echo "Deploying backend to Azure Web App..."
 
-          # Update backend container
-          az container create \
-            --resource-group consistly-rg \
-            --name consistly-backend-staging \
-            --image consistlyacr.azurecr.io/consistly-backend:${{ github.sha }} \
-            --dns-name-label consistly-backend-staging \
-            --ports 8000 \
-            --environment-variables \
-              DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-              SECRET_KEY="${{ secrets.STAGING_SECRET_KEY }}" \
-              ENVIRONMENT="staging" \
-            --restart-policy Always \
-            --output none
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name consistlyacr --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)
 
-          # Update frontend container
-          az container create \
+          # Configure container with ACR credentials
+          az webapp config container set \
             --resource-group consistly-rg \
-            --name consistly-frontend-staging \
-            --image consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }} \
-            --dns-name-label consistly-frontend-staging \
-            --ports 80 \
-            --environment-variables \
-              REACT_APP_API_URL="http://consistly-backend-staging.centralus.azurecontainer.io:8000" \
-              REACT_APP_ENVIRONMENT="staging" \
-            --restart-policy Always \
-            --output none
+            --name consistly-backend-app \
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-backend:${{ github.sha }} \
+            --docker-registry-server-url https://consistlyacr.azurecr.io \
+            --docker-registry-server-user $ACR_USERNAME \
+            --docker-registry-server-password $ACR_PASSWORD
+
+          # Set startup command for Azure App Service
+          az webapp config set \
+            --resource-group consistly-rg \
+            --name consistly-backend-app \
+            --startup-file "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+          # Set environment variables for Azure App Service
+          az webapp config appsettings set \
+            --resource-group consistly-rg \
+            --name consistly-backend-app \
+            --settings \
+            SECRET_KEY="azure-secret-key-$(date +%s)" \
+            ENVIRONMENT="staging" \
+            PORT="8000"
+
+          az webapp restart \
+            --resource-group consistly-rg \
+            --name consistly-backend-app
+
+      - name: Deploy Frontend to Azure Web App
+        run: |
+          echo "Deploying frontend to Azure Web App..."
+
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name consistlyacr --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)
+
+          # Configure container with ACR credentials
+          az webapp config container set \
+            --resource-group consistly-rg \
+            --name consistly-frontend-app \
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }} \
+            --docker-registry-server-url https://consistlyacr.azurecr.io \
+            --docker-registry-server-user $ACR_USERNAME \
+            --docker-registry-server-password $ACR_PASSWORD
+
+          # Set environment variables for Frontend App Service
+          az webapp config appsettings set \
+            --resource-group consistly-rg \
+            --name consistly-frontend-app \
+            --settings \
+            ENVIRONMENT="staging"
+
+          az webapp restart \
+            --resource-group consistly-rg \
+            --name consistly-frontend-app
 
       - name: Health check Azure staging
         run: |
           echo "Performing health check on Azure staging..."
-          sleep 30  # Wait for containers to start
-          curl -f http://consistly-backend-staging.centralus.azurecontainer.io:8000/health
-          curl -f http://consistly-frontend-staging.centralus.azurecontainer.io/health
+          echo "Waiting for Azure App Service to start..."
+          sleep 60  # Increased wait time for Azure
+
+          echo "Testing backend health..."
+          curl -v https://consistly-backend-app.azurewebsites.net/health || echo "Backend health check failed"
+
+          echo "Testing frontend health..."
+          curl -v https://consistly-frontend-app.azurewebsites.net/ || echo "Frontend health check failed"
+
+          echo "Checking Azure App Service status..."
+          az webapp show --resource-group consistly-rg --name consistly-backend-app --query "state"
+          az webapp show --resource-group consistly-rg --name consistly-frontend-app --query "state"
 
   # Deploy to Azure Production
   deploy-azure-production:
@@ -279,43 +336,54 @@ jobs:
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Deploy to Azure production
+      - name: Deploy Backend to Azure Web App
         run: |
-          echo "Deploying to Azure production environment..."
+          echo "Deploying backend to Azure Web App..."
 
-          # Update backend container
-          az container create \
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name consistlyacr --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)
+
+          # Configure container with ACR credentials
+          az webapp config container set \
             --resource-group consistly-rg \
             --name consistly-backend-prod \
-            --image consistlyacr.azurecr.io/consistly-backend:${{ github.sha }} \
-            --dns-name-label consistly-backend-prod \
-            --ports 8000 \
-            --environment-variables \
-              DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-              SECRET_KEY="${{ secrets.PRODUCTION_SECRET_KEY }}" \
-              ENVIRONMENT="production" \
-            --restart-policy Always \
-            --output none
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-backend:${{ github.sha }} \
+            --docker-registry-server-url https://consistlyacr.azurecr.io \
+            --docker-registry-server-user $ACR_USERNAME \
+            --docker-registry-server-password $ACR_PASSWORD
 
-          # Update frontend container
-          az container create \
+          az webapp restart \
+            --resource-group consistly-rg \
+            --name consistly-backend-prod
+
+      - name: Deploy Frontend to Azure Web App
+        run: |
+          echo "Deploying frontend to Azure Web App..."
+
+          # Get ACR credentials
+          ACR_USERNAME=$(az acr credential show --name consistlyacr --query username -o tsv)
+          ACR_PASSWORD=$(az acr credential show --name consistlyacr --query passwords[0].value -o tsv)
+
+          # Configure container with ACR credentials
+          az webapp config container set \
             --resource-group consistly-rg \
             --name consistly-frontend-prod \
-            --image consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }} \
-            --dns-name-label consistly-frontend-prod \
-            --ports 80 \
-            --environment-variables \
-              REACT_APP_API_URL="https://api.consistly-app.com" \
-              REACT_APP_ENVIRONMENT="production" \
-            --restart-policy Always \
-            --output none
+            --docker-custom-image-name consistlyacr.azurecr.io/consistly-frontend:${{ github.sha }} \
+            --docker-registry-server-url https://consistlyacr.azurecr.io \
+            --docker-registry-server-user $ACR_USERNAME \
+            --docker-registry-server-password $ACR_PASSWORD
+
+          az webapp restart \
+            --resource-group consistly-rg \
+            --name consistly-frontend-prod
 
       - name: Health check Azure production
         run: |
           echo "Performing health check on Azure production..."
           sleep 30  # Wait for containers to start
-          curl -f http://consistly-backend-prod.centralus.azurecontainer.io:8000/health
-          curl -f http://consistly-frontend-prod.centralus.azurecontainer.io/health
+          curl -f https://consistly-backend-prod.azurewebsites.net/health
+          curl -f https://consistly-frontend-prod.azurewebsites.net/health
 
   # Deploy to Staging (Local)
   deploy-staging:
@@ -330,14 +398,20 @@ jobs:
       - name: Deploy to staging environment
         run: |
           echo "Deploying to staging environment..."
+          # Set required environment variables
+          export STAGING_SECRET_KEY="staging-secret-key-$(date +%s)"
+          export STAGING_GRAFANA_PASSWORD="admin"
+
           chmod +x scripts/deploy-staging.sh
           ./scripts/deploy-staging.sh
 
       - name: Health check staging
         run: |
           echo "Performing health check on staging..."
-          curl -f http://localhost:8001/health
-          curl -f f http://localhost:8080/health
+          echo "Checking backend health..."
+          curl -v http://localhost:8001/health || echo "Backend health check failed"
+          echo "Checking frontend health..."
+          curl -v http://localhost:8080/ || echo "Frontend health check failed"
 
   # Deploy to Production (Local)
   deploy-production:

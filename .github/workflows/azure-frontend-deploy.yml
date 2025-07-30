@@ -2,7 +2,7 @@ name: Deploy React Frontend to Azure
 
 on:
   push:
-    branches: [main]
+    branches: [main, develop]
   workflow_dispatch:
 
 env:

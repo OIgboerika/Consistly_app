@@ -1,16 +1,15 @@
-version: "3.8"
-
 services:
   # Backend API
   backend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-oigboerika/consistly_app}:develop
+    image: ghcr.io/oigboerika/consistly-backend:develop
     container_name: consistly-backend-staging
     ports:
       - "8001:8000"
     environment:
       - DATABASE_URL=postgresql://myuser:mypassword@db:5432/mydb_staging
-      - SECRET_KEY=${STAGING_SECRET_KEY}
+      - SECRET_KEY=${STAGING_SECRET_KEY:-staging-secret-key-default}
       - ENVIRONMENT=staging
+      - PORT=8000
     depends_on:
       - db
     networks:
@@ -25,7 +24,7 @@ services:
 
   # Frontend
   frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-oigboerika/consistly_app}-frontend:develop
+    image: ghcr.io/oigboerika/consistly-frontend:develop
     container_name: consistly-frontend-staging
     ports:
       - "8080:80"
@@ -35,7 +34,7 @@ services:
       - consistly-staging-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      test: ["CMD", "curl", "-f", "http://localhost/"]
       interval: 30s
       timeout: 10s
       retries: 3
