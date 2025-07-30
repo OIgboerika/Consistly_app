@@ -258,6 +258,21 @@ jobs:
             --docker-registry-server-user $ACR_USERNAME \
             --docker-registry-server-password $ACR_PASSWORD
 
+          # Set startup command for Azure App Service
+          az webapp config set \
+            --resource-group consistly-rg \
+            --name consistly-backend-app \
+            --startup-file "python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+          # Set environment variables for Azure App Service
+          az webapp config appsettings set \
+            --resource-group consistly-rg \
+            --name consistly-backend-app \
+            --settings \
+            SECRET_KEY="azure-secret-key-$(date +%s)" \
+            ENVIRONMENT="staging" \
+            PORT="8000"
+
           az webapp restart \
             --resource-group consistly-rg \
             --name consistly-backend-app
@@ -279,6 +294,13 @@ jobs:
             --docker-registry-server-user $ACR_USERNAME \
             --docker-registry-server-password $ACR_PASSWORD
 
+          # Set environment variables for Frontend App Service
+          az webapp config appsettings set \
+            --resource-group consistly-rg \
+            --name consistly-frontend-app \
+            --settings \
+            ENVIRONMENT="staging"
+
           az webapp restart \
             --resource-group consistly-rg \
             --name consistly-frontend-app
@@ -286,9 +308,18 @@ jobs:
       - name: Health check Azure staging
         run: |
           echo "Performing health check on Azure staging..."
-          sleep 30  # Wait for containers to start
-          curl -f https://consistly-backend-app.azurewebsites.net/health
-          curl -f https://consistly-frontend-app.azurewebsites.net/health
+          echo "Waiting for Azure App Service to start..."
+          sleep 60  # Increased wait time for Azure
+
+          echo "Testing backend health..."
+          curl -v https://consistly-backend-app.azurewebsites.net/health || echo "Backend health check failed"
+
+          echo "Testing frontend health..."
+          curl -v https://consistly-frontend-app.azurewebsites.net/ || echo "Frontend health check failed"
+
+          echo "Checking Azure App Service status..."
+          az webapp show --resource-group consistly-rg --name consistly-backend-app --query "state"
+          az webapp show --resource-group consistly-rg --name consistly-frontend-app --query "state"
 
   # Deploy to Azure Production
   deploy-azure-production:
