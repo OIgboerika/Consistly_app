@@ -27,7 +27,7 @@ jobs:
           mkdir -p backend-package
           cp -r app backend-package/
           cp requirements.txt backend-package/
-          echo "pip install -r requirements.txt && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000" > backend-package/startup.txt
+          echo "pip install -r requirements.txt && python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-80}" > backend-package/startup.txt
 
       - name: Login to Azure
         uses: azure/login@v1
@@ -43,4 +43,4 @@ jobs:
 
       - name: Configure startup command with dependency installation
         run: |
-          az webapp config set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group consistly-rg --startup-file "pip install -r requirements.txt && python -m uvicorn app.main:app --host 0.0.0.0 --port 8000"
+          az webapp config set --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group consistly-rg --startup-file "pip install -r requirements.txt && python -m uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-80}"

@@ -142,7 +142,7 @@ create_staging_environment() {
         --name consistly-backend-staging \
         --image $ACR_NAME.azurecr.io/consistly-backend:latest \
         --dns-name-label consistly-backend-staging \
-        --ports 8000 \
+        --ports 80 \
         --environment-variables \
             DATABASE_URL="$DB_CONNECTION_STRING" \
             SECRET_KEY="staging-secret-key-$(date +%s)" \
@@ -158,7 +158,7 @@ create_staging_environment() {
         --dns-name-label consistly-frontend-staging \
         --ports 80 \
         --environment-variables \
-            REACT_APP_API_URL="http://consistly-backend-staging.eastus.azurecontainer.io:8000" \
+            REACT_APP_API_URL="http://consistly-backend-staging.eastus.azurecontainer.io:80" \
             REACT_APP_ENVIRONMENT="staging" \
         --output none
     
@@ -214,14 +214,14 @@ display_deployment_info() {
     echo "PostgreSQL Server: $POSTGRES_SERVER.postgres.database.azure.com"
     echo ""
     echo "=== Staging URLs ==="
-    echo "Backend: http://consistly-backend-staging.eastus.azurecontainer.io:8000"
+    echo "Backend: http://consistly-backend-staging.eastus.azurecontainer.io:80"
     echo "Frontend: http://consistly-frontend-staging.eastus.azurecontainer.io"
     echo ""
     echo "=== Production URLs ==="
     echo "Application Gateway: $(az network public-ip show --resource-group $RESOURCE_GROUP --name consistly-pip --query ipAddress --output tsv)"
     echo ""
     echo "=== Health Check URLs ==="
-    echo "Backend Health: http://consistly-backend-staging.eastus.azurecontainer.io:8000/health"
+    echo "Backend Health: http://consistly-backend-staging.eastus.azurecontainer.io:80/health"
     echo "Frontend Health: http://consistly-frontend-staging.eastus.azurecontainer.io/health"
     echo ""
     echo "=== Database Connection ==="
