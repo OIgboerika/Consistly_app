@@ -3,7 +3,7 @@ version: "3.8"
 services:
   # Backend API
   backend:
-    image: consistlyacr.azurecr.io/consistly-backend:latest
+    image: ghcr.io/oigboerika/consistly-backend:develop
     container_name: consistly-backend-staging
     ports:
       - "8001:8000"
@@ -25,7 +25,7 @@ services:
 
   # Frontend
   frontend:
-    image: consistlyacr.azurecr.io/consistly-frontend:latest
+    image: ghcr.io/oigboerika/consistly-frontend:develop
     container_name: consistly-frontend-staging
     ports:
       - "8080:80"
