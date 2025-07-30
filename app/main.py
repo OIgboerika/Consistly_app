@@ -7,6 +7,7 @@ logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Consistly API", version="1.0.0")
 
+
 @app.on_event("startup")
 async def startup_event():
     logger.info("Starting Consistly API...")
