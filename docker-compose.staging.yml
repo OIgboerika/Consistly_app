@@ -3,7 +3,7 @@ version: "3.8"
 services:
   # Backend API
   backend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-oigboerika/consistly_app}:develop
+    image: ghcr.io/oigboerika/consistly_app:develop
     container_name: consistly-backend-staging
     ports:
       - "8001:8000"
@@ -25,7 +25,7 @@ services:
 
   # Frontend
   frontend:
-    image: ghcr.io/${GITHUB_REPOSITORY:-oigboerika/consistly_app}-frontend:develop
+    image: ghcr.io/oigboerika/consistly_app-frontend:develop
     container_name: consistly-frontend-staging
     ports:
       - "8080:80"
