@@ -200,7 +200,9 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/consistly-frontend:${{ github.sha }}
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/consistly-frontend:${{ github.sha }}
+            ${{ env.REGISTRY }}/${{ env.REPO_OWNER_LOWER }}/consistly-frontend:develop
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
